@@ -25,7 +25,8 @@ import sys
 import time
 from struct import unpack
 
-from dns_message import DNSHeader, DNSQuestion, DNSRR, DNSMessage, dns_rr_types, dns_query_classes, field_names
+from dns_message import DNSHeader, DNSQuestion, DNSRR, DNSMessage, dns_rr_types, dns_query_classes, field_names, \
+    dns_opcodes, dns_response_codes
 from pcap_data import ip_protos, ETH_HEADER_LENGTH, IP_HEADER_LENGTH, TCP_HEADER_LENGTH, UDP_HEADER_LENGTH
 
 
@@ -359,6 +360,8 @@ def read_pcap_file(in_filename, out_filename, summary_report=False):
     response_record_counts=[dict(),dict(),dict(),dict()]
     response_ttl=dict()
     domain_components=dict()
+    opcodes=dict()
+    response_codes=dict()
 
     csv_file=open(out_filename, 'w',newline='')
     csv_writer = csv.DictWriter(csv_file,fieldnames=field_names)
@@ -376,6 +379,8 @@ def read_pcap_file(in_filename, out_filename, summary_report=False):
                 # I don't really care about queries, so I only count them
             elif dns_message.header.qr_flag==1:
                 num_answers+=1
+                opcodes[dns_message.header.opcode]=opcodes.get(dns_message.header.opcode,0)+1
+                response_codes[dns_message.header.rcode]=response_codes.get(dns_message.header.rcode,0)+1
                 d=response_record_counts[0]
                 d[dns_message.header.question_entry_count]=d.get(dns_message.header.question_entry_count,0)+1
                 d=response_record_counts[1]
@@ -411,6 +416,12 @@ def read_pcap_file(in_filename, out_filename, summary_report=False):
 
     if summary_report:
         logger.info('Queries/Responses: {}/{}'.format(num_queries,num_answers))
+        logger.info('Opcodes')
+        for k,v in opcodes.items():
+            logger.info('opcode: {} count: {}'.format(dns_opcodes.get(k,'unknown'),v))
+        logger.info('Response codes')
+        for k,v in response_codes.items():
+            logger.info('response code: {} count: {}'.format(dns_response_codes.get(k,'unknown'),v))
         logger.info('query types')
         for k,v in query_types.items():
             logger.info('query type: {} count: {}'.format(dns_rr_types.get(k,'unknown'),v))
@@ -450,6 +461,7 @@ if __name__ == '__main__':
     parser.add_argument('--infile', required=False)
     parser.add_argument('--outfile', required=False)
     parser.add_argument('--loglevel', default='INFO')
+    parser.add_argument('--summary', action='store_true', default=False)
     args = parser.parse_args()
 
     numeric_level = getattr(logging, args.loglevel.upper(), None)
@@ -470,5 +482,5 @@ if __name__ == '__main__':
 
     logger_data.disabled=True
 
-    read_pcap_file(i_filename,o_filename, False)
+    read_pcap_file(i_filename,o_filename, args.summary)
 
