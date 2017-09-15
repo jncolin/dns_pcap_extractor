@@ -1,0 +1,12 @@
+# List of data sources
+
+## pcap traces
+* botdigger_sample https://github.com/hanzhang0116/BotDigger
+* CTU-13-Dataset https://mcfp.felk.cvut.cz/publicDatasets/CTU-13-Dataset/
+* jhuisi-capture-1 http://old.dfrws.org/2009/challenge/submission.shtml
+* nssal-capture-1 http://old.dfrws.org/2009/challenge/submission.shtml
+* nssal-capture-2 http://old.dfrws.org/2009/challenge/submission.shtml
+
+## other
+* http://www.malwaredomains.com/
+* https://www.alexa.com/topsites

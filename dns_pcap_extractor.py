@@ -24,6 +24,7 @@ import struct
 import sys
 import time
 from struct import unpack
+import re
 
 from dns_message import DNSHeader, DNSQuestion, DNSRR, DNSMessage, dns_rr_types, dns_query_classes, field_names, \
     dns_opcodes, dns_response_codes
@@ -441,9 +442,9 @@ def read_pcap_file(in_filename, out_filename, summary_report=False):
         for k,v in sorted_list:
             logger.info('response additional count: {} count: {}'.format(k,v))
 
-        sorted_list = sorted(response_ttl.items(), key=lambda x: x[0])
-        for k,v in sorted_list:
-            logger.info('answer ttl: {} count: {}'.format(k,v))
+        # sorted_list = sorted(response_ttl.items(), key=lambda x: x[0])
+        # for k,v in sorted_list:
+        #     logger.info('answer ttl: {} count: {}'.format(k,v))
 
         logger.info('#unique domains in queries: {}'.format(len(query_names)))
         for d in query_names:
@@ -474,7 +475,8 @@ if __name__ == '__main__':
     else:
         i_filename=args.infile
     if args.outfile is None:
-        o_filename='data/output.csv'
+        p = re.compile(r'.pcap$')
+        o_filename=p.sub('.csv',i_filename)
     else:
         o_filename=args.outfile
     logger.info('Reading file {}'.format(i_filename))
