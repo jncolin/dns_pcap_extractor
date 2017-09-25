@@ -149,7 +149,7 @@ def parse_rr_rdata(rr_type, dns_payload, start, length,proto='udp'):
                 format(ip[0],ip[1],ip[2],ip[3],ip[4],ip[5],ip[6],ip[7],ip[8],
                        ip[9],ip[10],ip[11],ip[12],ip[13],ip[14],ip[15])
         else:
-            logger.error('error in AAAA length: ',length)
+            logger.error('error in AAAA length: {}'.format(length))
         return buffer
     else:
         return 'unsupported RR type'
@@ -204,7 +204,7 @@ def parse_dns_message(dns_payload,proto='udp'):
     logger_data.debug('DNS header: ' + str(dns_header))
     # parse questions
     """
-    Messages sent over TCP connections use server port 53 (decimal).  The 
+    Messages sent over TCP connections use server port 53 (decimal).  The
     message is prefixed with a two byte length field which gives the message
     length, excluding the two byte length field.  This length field allows
     the low-level processing to assemble a complete message before beginning
@@ -269,7 +269,7 @@ def parse_tcp_packet(raw_ethernet_frame,extra_headers,total_length):
     # in a TCP DNS Query, there is an extra Length field before the identifier in the DNS Header
     # see https://www.ietf.org/rfc/rfc1035.txt
     """
-    Messages sent over TCP connections use server port 53 (decimal).  The 
+    Messages sent over TCP connections use server port 53 (decimal).  The
     message is prefixed with a two byte length field which gives the message
     length, excluding the two byte length field.  This length field allows
     the low-level processing to assemble a complete message before beginning
@@ -352,7 +352,7 @@ def parse_raw_packet(frame):
         else:
             raise(ParseException('unknown protocol: {}'.format(ip_protos.get(protocol,'unknown'))))
 
-def read_pcap_file(in_filename, out_filename, summary_report=False):
+def read_pcap_file(in_filename, out_filename, summary_report=False, progress_every=0):
     count=errors=0
     num_queries=num_answers=0
     query_names=set()
@@ -373,6 +373,9 @@ def read_pcap_file(in_filename, out_filename, summary_report=False):
     (header, payload) = pcap_file.next()
     while header is not None:
         count+=1
+        if progress_every > 0:
+            if count % progress_every==0:
+                print(count)
         try:
             dns_message=parse_raw_packet(payload)
             if dns_message.header.qr_flag==0:
@@ -461,9 +464,15 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='PCAP dns reader')
     parser.add_argument('--infile', required=False)
     parser.add_argument('--outfile', required=False)
+    parser.add_argument('--progress', nargs='?', type=int, const=1000, required=False)
     parser.add_argument('--loglevel', default='INFO')
     parser.add_argument('--summary', action='store_true', default=False)
     args = parser.parse_args()
+
+    if args.progress is None:
+        progress_every=0
+    else:
+        progress_every=args.progress
 
     numeric_level = getattr(logging, args.loglevel.upper(), None)
     if not isinstance(numeric_level, int):
@@ -484,5 +493,4 @@ if __name__ == '__main__':
 
     logger_data.disabled=True
 
-    read_pcap_file(i_filename,o_filename, args.summary)
-
+    read_pcap_file(i_filename,o_filename, args.summary, progress_every)
