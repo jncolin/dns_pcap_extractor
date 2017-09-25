@@ -464,6 +464,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='PCAP dns reader')
     parser.add_argument('--infile', required=False)
     parser.add_argument('--outfile', required=False)
+    parser.add_argument('--logfile', required=False)
     parser.add_argument('--progress', nargs='?', type=int, const=1000, required=False)
     parser.add_argument('--loglevel', default='INFO')
     parser.add_argument('--summary', action='store_true', default=False)
@@ -477,8 +478,19 @@ if __name__ == '__main__':
     numeric_level = getattr(logging, args.loglevel.upper(), None)
     if not isinstance(numeric_level, int):
         raise ValueError('Invalid log level: %s' % args.loglevel)
+
     logging.basicConfig(level=numeric_level)
     logger.setLevel(numeric_level)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    if args.logfile is None:
+        hdlr = logging.StreamHandler()
+    else:
+        hdlr = logging.FileHandler(args.logfile)
+    hdlr.setFormatter(formatter)
+    logger.addHandler(hdlr)
+
+
+
     if args.infile is None:
         i_filename='data/dns-traffic.20140409.pcap'
     else:
