@@ -375,7 +375,7 @@ def read_pcap_file(in_filename, out_filename, summary_report=False, progress_eve
         count+=1
         if progress_every > 0:
             if count % progress_every==0:
-                print(count)
+                logger.info(count)
         try:
             dns_message=parse_raw_packet(payload)
             if dns_message.header.qr_flag==0:
