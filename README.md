@@ -1,5 +1,5 @@
 # dns_pcap_extractor
-Python script that extract dns traffic data from pcap file and can export to csv file. It relies on the pcapy library
+A Python 3 script that extracts dns traffic data from pcap file and exports its content to a csv file. It relies on the [pcapy library](https://pypi.python.org/pypi/pcapy)
 
 It takes as input a pcap file and writes its output to a csv file. 
 Only DNS queries or responses are taken into account, all other packets are discarded.
