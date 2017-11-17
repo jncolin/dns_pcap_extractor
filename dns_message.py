@@ -139,7 +139,7 @@ dns_query_classes={
     4: 'Hesiod'
 }
 
-field_names = ['identifier', 'opcode', 'aa_flag', 'tc_flag', 'rd_flag', 'ra_flag', 'rcode', 'questions_count',
+field_names = ['ts_sec','ts_usec','identifier', 'opcode', 'aa_flag', 'tc_flag', 'rd_flag', 'ra_flag', 'rcode', 'questions_count',
                'answers_count', 'authority_count', 'additional_count', 'q_name', 'q_type', 'q_class']
 
 
@@ -221,9 +221,22 @@ class DNSQuestion:
                                                        dns_rr_types.get(self.qtype,'unknown {}'.format(self.qtype)),
                                                        dns_query_classes.get(self.qclass,'unknown {}'.format(self.qclass)))
 
+class TimeStamp:
+    def __init__(self):
+        self.seconds=0
+        self.microseconds=0
+
+    def __init__(self, sec=0, usec=0):
+        self.seconds=sec
+        self.microseconds=usec
+
+    def __str__(self):
+        return '{}s{}usec'.format(self.ts.seconds,self.ts.microseconds)
+
 
 class DNSMessage:
     def __init__(self):
+        self.timestamp=None
         self.header=DNSHeader()
         self.questions=[]
         self.answer_rrs=[]
@@ -234,7 +247,9 @@ class DNSMessage:
         return '{}\n{}\n{}'.format(self.header,self.questions,self.answer_rrs)
 
     def as_dict(self):
-        return {'identifier': self.header.identifier,
+        return {'ts_sec': self.timestamp.seconds,
+                'ts_usec': self.timestamp.microseconds,
+                'identifier': self.header.identifier,
                 'opcode': self.header.opcode,
                 'aa_flag': self.header.aa_bit,
                 'tc_flag': self.header.tc_bit,

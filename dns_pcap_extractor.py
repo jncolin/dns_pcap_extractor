@@ -27,7 +27,7 @@ from struct import unpack
 import re
 
 from dns_message import DNSHeader, DNSQuestion, DNSRR, DNSMessage, dns_rr_types, dns_query_classes, field_names, \
-    dns_opcodes, dns_response_codes
+    dns_opcodes, dns_response_codes, TimeStamp
 from pcap_data import ip_protos, ETH_HEADER_LENGTH, IP_HEADER_LENGTH, TCP_HEADER_LENGTH, UDP_HEADER_LENGTH
 
 
@@ -373,11 +373,13 @@ def read_pcap_file(in_filename, out_filename, summary_report=False, progress_eve
     (header, payload) = pcap_file.next()
     while header is not None:
         count+=1
+        ts=TimeStamp(header.getts()[0],header.getts()[1])
         if progress_every > 0:
             if count % progress_every==0:
                 logger.info(count)
         try:
             dns_message=parse_raw_packet(payload)
+            dns_message.timestamp=ts
             if dns_message.header.qr_flag==0:
                 num_queries+=1
                 # I don't really care about queries, so I only count them
